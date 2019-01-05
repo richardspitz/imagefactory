@@ -113,7 +113,7 @@ echo "Copy Finished:" >> /var/log/azcopytiming.log
 date >> /var/log/azcopytiming.log
 azcopy --source /var/log/azcopytiming.log --destination "$($storAccount.PrimaryEndpoints.Blob)$($containerName)/azcopytiming.log" --dest-key "$($storAccountKey.value[0])"
 echo "[{'Name': '$($RG.ResourceGroupName)'}]" > body.json
-curl -X POST -H "message:AutodeskImageCopy" -d @body.json $($webhookURI)
+curl -X POST -H "message:ImageCopy" -d @body.json $($webhookURI)
 
 "@
 
