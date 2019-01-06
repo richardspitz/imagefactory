@@ -3,7 +3,7 @@
 
 Synchronously copy all managed disks of a powered-off Azure Virtual Machine to an Azure Storage Account in any Azure region using a temporary Azure Virtual Machine spun up for the copy and then torn down after the copy completes. 
 
-Solution Flow:
+## Solution Flow
 
 * Creates two resource groups - one for the temporary Azure Virtual Machine and the second for the Azure Storage Account in the destination
 
@@ -21,17 +21,20 @@ Solution Flow:
 
 * Deletes the resource group containing the temporary Azure Virtual Machine.
 
+## Steps
+
 1. Create an Azure Automation Account with a Run As account.
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/AutoAccCreate.JPG)
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/AutoAccount.JPG)
 
-2. ***Important*** Update Azure modules.
+2. ***Important*** Update Azure modules, and wait till the operation completes.
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/UpdateAzureModules.JPG)
     
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/UpdateAzureModules1.JPG)
+    
 3. Create a PowerShell runbook each for ImageCopy.ps1 (named PageBlobCopy) and Cleanup.ps1 (named Cleanup). Copy the code from these files into the browser-based editor for each of these runbooks. Click "Publish".
 
     (The steps below are for the first runbook. Repeat these for the second runbook as well)
