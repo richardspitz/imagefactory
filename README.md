@@ -93,7 +93,7 @@ Record the expiry of the webhook URI and Azure Automation Run As accounts to ren
 
 This sample code is licensed under the [MIT License](https://github.com/richardspitz/imagefactory/raw/master/LICENSE).
 
-## To-do:
+## To do
 
 1. Error handling
 2. ARM template deployment of this solution
