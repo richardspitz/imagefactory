@@ -93,9 +93,11 @@ For each destination location specified:
     $runbookName = Your_Runbook_Name
     $automationResourceGroupName = Your_AutomationAccount_Resourcegroup_Name
 
-    $params = @{"SourceVMName"=$SourceVMName; "SourceResourceGroup"=$SourceResourceGroup; "DestLocations"=$DestLocations}
+    $params = @{"SourceVMName"=$SourceVMName;"SourceResourceGroup"=$SourceResourceGroup; `
+    "DestLocations"=$DestLocations}
 
-    Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name $runbookName -ResourceGroupName $automationResourceGroupName -Parameters $params
+    Start-AzAutomationRunbook -AutomationAccountName $automationAccountName -Name $runbookName `
+    -ResourceGroupName $automationResourceGroupName -Parameters $params
     ```
 
 
