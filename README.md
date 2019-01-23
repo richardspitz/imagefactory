@@ -1,25 +1,33 @@
 # Automated Inter-Region VHD Copy using AzCopy --sync-copy
 
 
-Synchronously copy all managed disks of a powered-off Azure Virtual Machine to an Azure Storage Account in any Azure region using a temporary Azure Virtual Machine spun up for the copy and then torn down after the copy completes. 
+Synchronously copy all managed disks of a _powered-off_ Azure Virtual Machine to Azure Storage Accounts in one or more Azure regions using a temporary Azure Virtual Machine spun up for the copy and then torn down after the copy completes. 
+
+_***Important***:_
+
+_The Virtual Machine must be powered off for the disk SAS (Shared Access Signature) to be created._
+
+_Start only one instance of the runbook for a particular source Virtual Machine. Starting multiple instances for the same source Virtual Machine will result in new SAS being generated for its disks and this will cause any ongoing copy operations to be terminated._
 
 ## Solution Flow
 
-* Creates two resource groups - one for the temporary Azure Virtual Machine and the second for the Azure Storage Account in the destination
+For each destination location specified:
 
-* Creates the destination Azure Storage Account with the "azcopy" container, that will contain the copied disks.
+1. Creates two resource groups - one for the temporary Azure Virtual Machine and the second for the Azure Storage Account in the destination
 
-* Gets source Azure Virtual Machine managed disk Shared Access Signatures (SAS).
+2. Creates the destination Azure Storage Account with the "azcopy" container, that will contain the copied disks.
+
+3. Gets source Azure Virtual Machine managed disk Shared Access Signatures (SAS).
 
     _Note: The source Azure Virtual Machine must be in the Stopped-Deallocated state._
 
-* Creates a Bash script to run AzCopy using the disks SAS and then clean up temporary resources.
+4. Creates a Bash script to run AzCopy using the disks SAS and then clean up temporary resources.
 
-* Creates a temporary Linux Azure Virtual Machine and injects the Bash script.
+5. Creates a temporary Linux Azure Virtual Machine and injects the Bash script.
 
-* Copies managed disks using AzCopy --sync-copy and the temporary Azure Virtual Machine bandwidth and memory.
+6. Copies managed disks using AzCopy --sync-copy and the temporary Azure Virtual Machine bandwidth and memory.
 
-* Deletes the resource group containing the temporary Azure Virtual Machine.
+7. Deletes the resource group containing the temporary Azure Virtual Machine.
 
 ## Steps
 
@@ -65,7 +73,9 @@ Synchronously copy all managed disks of a powered-off Azure Virtual Machine to a
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/Variables3.JPG)
 
-6. Start the PageBlobCopy runbook.
+6. Start the PageBlobCopy runbook and specify the source VM name, source resource group and one or more comma-separated "destination" Azure Regions. For example:
+
+    Australia East,Southeast Asia,West US 2
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/StartRunbook.JPG)
 
