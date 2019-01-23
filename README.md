@@ -79,7 +79,7 @@ For each destination location specified:
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/StartRunbook.JPG)
 
-7. Locate the destination Azure Storage Account resource group using the output of the PageBlobCopy job.
+7. Locate the destination Azure Storage Account resource groups using the output of the PageBlobCopy job.
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/RunbookOutput1.JPG)
 
@@ -87,7 +87,7 @@ For each destination location specified:
 
     ![](https://github.com/richardspitz/imagefactory/raw/master/images/RunbookOutput3.JPG)
 
-Navigate to the "azcopy" Blob Container in this Azure Storage Account. 
+Navigate to the "azcopy" Blob Container in each of these Azure Storage Accounts. 
 
 About 5 to 6 minutes after the runbook has started, all VHDs should appear here though at this point based on their size, the copy operation is ongoing. 
 
