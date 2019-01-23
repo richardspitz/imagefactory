@@ -83,15 +83,15 @@ For each destination location specified:
     Another way to start the runbook is via Azure PowerShell (using the newer [Az module](https://docs.microsoft.com/en-us/powershell/azure/install-az-ps?view=azps-1.1.0)), either on your computer or in [Cloud Shell](https://docs.microsoft.com/en-us/azure/cloud-shell/overview).
 
     ```powershell
-    $sourceVMName = Source_VM_Name
-    $sourceResourceGroup = Source_ResourceGroup_Name
+    $sourceVMName = "Source_VM_Name"
+    $sourceResourceGroup = "Source_ResourceGroup_Name"
 
     # Use Displayname from Get-AzLocation
     $destLocations = "Australia East,Southeast Asia,West US 2"
 
-    $automationAccountName = Your_AutomationAccount_Name
-    $runbookName = Your_Runbook_Name
-    $automationResourceGroupName = Your_AutomationAccount_Resourcegroup_Name
+    $automationAccountName = "Your_AutomationAccount_Name"
+    $runbookName = "Your_Runbook_Name"
+    $automationResourceGroupName = "Your_AutomationAccount_Resourcegroup_Name"
 
     $params = @{"SourceVMName"=$SourceVMName;"SourceResourceGroup"=$SourceResourceGroup; `
     "DestLocations"=$DestLocations}
