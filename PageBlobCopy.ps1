@@ -9,13 +9,12 @@ Param(
 [string]$SourceResourceGroup,
 
 [Parameter(Mandatory=$true)]
-[string]$DestLocation
+[string]$DestLocations
 
 )
 
 $dataDiskNames = New-Object System.Collections.ArrayList
 $dataDiskSASes = New-Object System.Collections.ArrayList
-$destDataDiskNames = New-Object System.Collections.ArrayList
 
 $containerName = "azcopy"
 $templateURI = "https://raw.githubusercontent.com/richardspitz/imagefactory/master/azuredeploy.json"
@@ -48,6 +47,32 @@ catch {
     }
 }
 
+# Get Source VM object to access disk info
+$VM = Get-AzureRmVM -ResourceGroupName $SourceResourceGroup -Name $SourceVMName -Verbose
+$osDiskName = $VM.StorageProfile.OsDisk.Name
+
+# Get OS Disk SAS
+$osDiskSAS = (Grant-AzureRmDiskAccess -Access Read -DiskName $osDiskName -ResourceGroupName $SourceResourceGroup -DurationInSecond 36000 -Verbose).AccessSAS
+
+# Get all data disk SAS
+foreach($dataDisk in $VM.StorageProfile.DataDisks)
+{
+    $dataDiskNames.Add($dataDisk.Name) | Out-Null
+    #$destDataDiskNames.Add($($storAccount.PrimaryEndpoints.Blob + $containerName + "/" + $dataDisk.Name + ".vhd")) | Out-Null
+
+}
+
+foreach($dataDiskName in $dataDiskNames)
+{
+    $dataDiskSASes.Add((Grant-AzureRmDiskAccess -Access Read -DiskName $dataDiskName -ResourceGroupName $SourceResourceGroup -DurationInSecond 36000 -Verbose).AccessSAS) | Out-Null
+}
+
+# Split and then loop for each destination region specified
+$arrDestLocations = $DestLocations.Split(",")
+
+foreach($DestLocation in $arrDestLocations)
+{
+$destDataDiskNames = New-Object System.Collections.ArrayList
 
 # Generate Random String to create names
 $randStr = Get-Random -Maximum 1000000000000000 -Minimum 100000000000000
@@ -55,7 +80,7 @@ $rgName = "AzCopy" + $randStr + "-RG"
 $rgNameStor = "ImgFac" + $randStr + "-RG"
 $storAccountName = "imgfac" + $randStr
 
-# Create Resource Group
+# Create Resource Groups for the AzCopy VM and Destination Storage Account
 $RG = New-AzureRmResourceGroup -Name $rgName -Location $DestLocation -Verbose
 $RGStor = New-AzureRmResourceGroup -Name $rgNameStor -Location $DestLocation -Verbose
 
@@ -65,26 +90,14 @@ $storAccount | New-AzureRmStorageContainer -Name $containerName -Verbose
 $storAccountKey = Get-AzureRmStorageAccountKey -ResourceGroupName $RGStor.ResourceGroupName -Name $storAccount.StorageAccountName -Verbose
 
 
-# Get Source VM Disk info for copy
-$VM = Get-AzureRmVM -ResourceGroupName $SourceResourceGroup -Name $SourceVMName -Verbose
-$osDiskName = $VM.StorageProfile.OsDisk.Name
+# Create destination disk names from original disk names
 $destOsDiskName = $storAccount.PrimaryEndpoints.Blob + $containerName + "/" + $osDiskName + ".vhd"
 foreach($dataDisk in $VM.StorageProfile.DataDisks)
 {
-    $dataDiskNames.Add($dataDisk.Name) | Out-Null
     $destDataDiskNames.Add($($storAccount.PrimaryEndpoints.Blob + $containerName + "/" + $dataDisk.Name + ".vhd")) | Out-Null
 }
 
-# Get OS Disk SAS
-$osDiskSAS = (Grant-AzureRmDiskAccess -Access Read -DiskName $osDiskName -ResourceGroupName $SourceResourceGroup -DurationInSecond 36000 -Verbose).AccessSAS
-
-# Get Data Disk SAS
-foreach($dataDiskName in $dataDiskNames)
-{
-    $dataDiskSASes.Add((Grant-AzureRmDiskAccess -Access Read -DiskName $dataDiskName -ResourceGroupName $SourceResourceGroup -DurationInSecond 36000 -Verbose).AccessSAS) | Out-Null
-}
-
-# Create Bash script to be run on AzCopy VM 
+# Create Bash script to be run on AzCopy VM that does the copy and then calls the cleanup runbook
 $bashScript = @"
 #!/bin/bash
 
@@ -129,4 +142,18 @@ $encodedBashScript =[Convert]::ToBase64String($Bytes)
 $paramObj = @{'adminPassword' = $adminPassword.ToString(); 'bashScript' = $encodedBashScript}
 
 # Run AzCopy VM Deployment
-New-AzureRmResourceGroupDeployment -ResourceGroupName $RG.ResourceGroupName -TemplateParameterObject $paramObj -TemplateUri $templateURI -Verbose
+New-AzureRmResourceGroupDeployment -ResourceGroupName $RG.ResourceGroupName -TemplateParameterObject $paramObj -TemplateUri $templateURI -AsJob
+
+# Remove variables 
+Remove-Variable -Name destDataDiskNames
+Remove-Variable -Name destOsDiskName
+Remove-Variable -Name RG
+Remove-Variable -Name RGStor
+Remove-Variable -Name storAccount
+Remove-Variable -Name storAccountKey
+Remove-Variable -Name bashScript
+Remove-Variable -Name Bytes
+Remove-Variable -Name encodedBashScript
+Remove-Variable -Name paramObj
+
+}
